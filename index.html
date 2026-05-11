@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Precificação e Etiquetas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+39&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --cor-fundo: #0d1117;
+            --cor-destaque: #00d2ff;
+            --cor-texto: #ffffff;
+            --cor-card: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--cor-fundo);
+            color: var(--cor-texto);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container-sistema {
+            background: #ffffff;
+            color: #333;
+            padding: 30px;
+            border-radius: 15px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        h2 { text-align: center; color: var(--cor-fundo); margin-bottom: 20px; }
+        h2 span { color: var(--cor-destaque); }
+
+        .campo-grupo { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        .row { display: flex; gap: 10px; margin-bottom: 15px; }
+        .row div { flex: 1; }
+
+        .botoes-margem {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+
+        .btn-margem {
+            padding: 10px 5px;
+            background: #eee;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .btn-margem.ativo {
+            background: var(--cor-destaque);
+            color: white;
+            border-color: var(--cor-destaque);
+        }
+
+        .btn-gerar {
+            width: 100%;
+            padding: 15px;
+            background: var(--cor-fundo);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        /* Design da Etiqueta */
+        #resultado-etiqueta {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .etiqueta {
+            width: 300px;
+            background: white;
+            border: 2px solid #000;
+            padding: 15px;
+            text-align: center;
+            color: #000;
+        }
+
+        .etiqueta .nome-id { font-size: 18px; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #000; }
+        .etiqueta .preco-venda { font-size: 42px; font-weight: 900; margin: 10px 0; }
+        .etiqueta .barcode { font-family: 'Libre Barcode 39'; font-size: 45px; margin-top: 10px; }
+        
+        @media print {
+            body * { visibility: hidden; }
+            #resultado-etiqueta, #resultado-etiqueta * { visibility: visible; }
+            #resultado-etiqueta { position: absolute; left: 0; top: 0; }
+            .btn-gerar { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container-sistema">
+        <h2>Robô de <span>Etiquetas</span></h2>
+        
+        <div class="campo-grupo">
+            <label>Produto / QR-Code / Barcode / PLU</label>
+            <input type="text" id="id-produto" placeholder="Bipe o código ou digite o nome">
+        </div>
+
+        <div class="row">
+            <div>
+                <label>Custo Caixa (R$)</label>
+                <input type="number" id="custo-bruto" placeholder="100.00">
+            </div>
+            <div>
+                <label>Qtd na Caixa</label>
+                <input type="number" id="quantidade" placeholder="24">
+            </div>
+        </div>
+
+        <label>Margem de Lucro</label>
+        <div class="botoes-margem">
+            <button class="btn-margem" onclick="selecionarMargem(10, this)">10%</button>
+            <button class="btn-margem" onclick="selecionarMargem(20, this)">20%</button>
+            <button class="btn-margem" onclick="selecionarMargem(30, this)">30%</button>
+            <button class="btn-margem" onclick="selecionarMargem(40, this)">40%</button>
+            <button class="btn-margem" onclick="selecionarMargem(50, this)">50%</button>
+        </div>
+
+        <button class="btn-gerar" onclick="calcularEtiqueta()">Gerar Etiqueta</button>
+
+        <div id="resultado-etiqueta">
+            </div>
+    </div>
+
+    <script>
+        let margemGlobal = 0;
+
+        function selecionarMargem(valor, elemento) {
+            margemGlobal = valor;
+            // Remove classe ativo de todos
+            document.querySelectorAll('.btn-margem').forEach(btn => btn.classList.remove('ativo'));
+            // Adiciona no clicado
+            elemento.classList.add('ativo');
+        }
+
+        function calcularEtiqueta() {
+            const id = document.getElementById('id-produto').value;
+            const custo = parseFloat(document.getElementById('custo-bruto').value);
+            const qtd = parseInt(document.getElementById('quantidade').value);
+
+            if (!id || !custo || !qtd || margemGlobal === 0) {
+                alert("Por favor, preencha todos os campos e selecione a margem.");
+                return;
+            }
+
+            const custoUnitario = custo / qtd;
+            const precoFinal = custoUnitario + (custoUnitario * (margemGlobal / 100));
+
+            const container = document.getElementById('resultado-etiqueta');
+            container.innerHTML = `
+                <div class="etiqueta">
+                    <div class="nome-id">${id.toUpperCase()}</div>
+                    <div style="font-size: 12px;">PREÇO UNITÁRIO</div>
+                    <div class="preco-venda">R$ ${precoFinal.toFixed(2).replace('.', ',')}</div>
+                    <div style="font-size: 10px;">Custo Un: R$ ${custoUnitario.toFixed(2)} | Margem: ${margemGlobal}%</div>
+                    <div class="barcode">${id}</div>
+                    <div style="font-size: 10px;">${id}</div>
+                </div>
+                <button class="btn-gerar" style="margin-top: 15px; background: #28a745;" onclick="window.print()">Imprimir Etiqueta</button>
+            `;
+        }
+    </script>
+
+</body>
+</html>
