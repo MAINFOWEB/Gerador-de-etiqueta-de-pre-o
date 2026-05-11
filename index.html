@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terminal de Etiquetas Profissional</title>
-    <link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+39&family=Roboto:wght@400;900&display=swap" rel="stylesheet">
+    <title>Editor de Etiquetas Inteligente - Márcio Alexandre</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+39&family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     
     <style>
         :root {
@@ -12,153 +12,309 @@
             --cor-destaque: #00d2ff;
             --cor-erro: #ff4d4d;
             --cor-sucesso: #28a745;
+            --cor-card: #ffffff;
         }
 
-        body { font-family: 'Roboto', sans-serif; background: var(--cor-fundo); color: white; display: flex; justify-content: center; padding: 20px; }
-        .sistema { background: #fff; color: #333; padding: 25px; border-radius: 15px; width: 100%; max-width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        
-        .campo { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
-        input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        
-        .botoes-margem { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin: 10px 0; }
-        .btn-m { padding: 10px; border: 1px solid #ccc; background: #eee; cursor: pointer; font-weight: bold; border-radius: 5px; transition: 0.3s; }
-        .btn-m.ativo { background: var(--cor-destaque); color: white; border-color: var(--cor-destaque); }
+        body { 
+            font-family: 'Roboto', sans-serif; 
+            background: var(--cor-fundo); 
+            color: #333; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center;
+            padding: 20px; 
+            margin: 0;
+        }
 
-        .acoes { display: flex; gap: 10px; margin-top: 20px; }
-        .btn-acao { flex: 2; padding: 15px; background: #222; color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        .btn-reset { flex: 1; padding: 15px; background: var(--cor-erro); color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .sistema-container { 
+            background: var(--cor-card); 
+            padding: 25px; 
+            border-radius: 15px; 
+            width: 100%; 
+            max-width: 450px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+        }
 
-        /* DESIGN DA ETIQUETA DE PRATELEIRA */
-        #area-impressao { margin-top: 30px; display: flex; flex-direction: column; align-items: center; }
-        .etiqueta-final {
-            width: 280px;
-            border: 2px solid #000;
-            padding: 10px;
+        h2 { text-align: center; margin-top: 0; color: var(--cor-fundo); }
+        h2 span { color: var(--cor-destaque); }
+
+        .campo-grupo { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; color: #555; }
+        
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #ccc; 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            font-size: 16px;
+            outline: none;
+        }
+        input:focus { border-color: var(--cor-destaque); box-shadow: 0 0 5px rgba(0,210,255,0.3); }
+
+        .row { display: flex; gap: 10px; }
+        .row div { flex: 1; }
+
+        .botoes-margem { 
+            display: grid; 
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 5px; 
+            margin: 10px 0 20px 0; 
+        }
+
+        .btn-m { 
+            padding: 10px 0; 
+            border: 1px solid #ccc; 
+            background: #eee; 
+            cursor: pointer; 
+            font-weight: bold; 
+            border-radius: 5px; 
+            transition: 0.3s;
+        }
+
+        .btn-m.ativo { 
+            background: var(--cor-destaque); 
+            color: white; 
+            border-color: var(--cor-destaque); 
+        }
+
+        .acoes { display: flex; gap: 10px; }
+        .btn-gerar { 
+            flex: 2; 
+            padding: 15px; 
+            background: var(--cor-fundo); 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            text-transform: uppercase; 
+        }
+        .btn-reset { 
+            flex: 1; 
+            padding: 15px; 
+            background: var(--cor-erro); 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            cursor: pointer; 
+        }
+
+        /* MODAL DE CADASTRO */
+        #modal-cadastro { 
+            display: none; 
+            position: fixed; 
+            top:0; left:0; width:100%; height:100%; 
+            background: rgba(0,0,0,0.85); 
+            z-index: 1000; 
+            justify-content: center; 
+            align-items: center; 
+        }
+        .modal-box { 
+            background: white; 
+            padding: 25px; 
+            border-radius: 15px; 
+            width: 90%; 
+            max-width: 380px; 
+            text-align: center; 
+        }
+
+        /* ETIQUETA FINAL */
+        #resultado-container { 
+            margin-top: 30px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+
+        .etiqueta-print { 
+            width: 280px; 
+            border: 2px solid #000; 
+            padding: 15px; 
+            background: #fff; 
+            color: #000; 
             text-align: center;
-            background: #fff;
-            color: #000;
-            margin-bottom: 15px;
         }
-        .etiqueta-final .nome-prod { font-size: 20px; font-weight: 900; text-transform: uppercase; border-bottom: 2px solid #000; padding-bottom: 5px; height: 50px; display: flex; align-items: center; justify-content: center; }
-        .etiqueta-final .preco-grande { font-size: 54px; font-weight: 900; margin: 5px 0; }
-        .etiqueta-final .cod-visual { font-family: 'Libre Barcode 39'; font-size: 50px; line-height: 1; margin-top: 5px; }
+        .etiqueta-print .desc { font-size: 18px; font-weight: 900; text-transform: uppercase; border-bottom: 2px solid #000; padding-bottom: 5px; min-height: 40px; display: flex; align-items: center; justify-content: center; }
+        .etiqueta-print .vlr { font-size: 52px; font-weight: 900; margin: 10px 0; }
+        .etiqueta-print .barcode-img { font-family: 'Libre Barcode 39'; font-size: 50px; line-height: 1; margin-top: 5px; }
 
-        .btn-imprimir { width: 100%; padding: 15px; background: var(--cor-sucesso); color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .btn-print { 
+            width: 100%; 
+            margin-top: 15px; 
+            padding: 15px; 
+            background: var(--cor-sucesso); 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            cursor: pointer; 
+        }
 
         @media print {
             body * { visibility: hidden; }
-            #area-impressao, #area-impressao .etiqueta-final, #area-impressao .etiqueta-final * { visibility: visible; }
-            #area-impressao { position: absolute; top: 0; left: 0; width: 100%; }
-            .btn-imprimir { display: none; }
+            #resultado-container, #resultado-container .etiqueta-print, #resultado-container .etiqueta-print * { visibility: visible; }
+            #resultado-container { position: absolute; top: 0; left: 0; width: 100%; }
+            .btn-print { display: none; }
         }
     </style>
 </head>
 <body>
 
-    <div class="sistema">
-        <h2 style="text-align:center; margin-bottom: 20px;">Terminal de <span>Etiquetas</span></h2>
+    <div class="sistema-container">
+        <h2>Editor de <span>Etiquetas</span></h2>
         
-        <div class="campo">
-            <label>Código de Barras / PLU</label>
-            <input type="text" id="input-codigo" oninput="buscarProduto()" placeholder="Aguardando a leitura ou digitação...">
-            <p id="msg-produto" style="font-size: 13px; color: var(--cor-destaque); margin-top: 5px; font-weight: bold; min-height: 15px;"></p>
+        <div class="campo-grupo">
+            <label>Código do Produto (Barcode / PLU)</label>
+            <input type="text" id="cod-produto" oninput="buscar()" placeholder="Bipe ou digite o código">
+            <p id="info-busca" style="font-size: 12px; margin-top: 5px; font-weight: bold; min-height: 15px;"></p>
         </div>
 
-        <div style="display:flex; gap:10px">
-            <div class="campo" style="flex:1">
-                <label>Custo Caixa (R$)</label>
-                <input type="number" id="vlr-caixa" step="0.01">
+        <div class="row">
+            <div class="campo-grupo">
+                <label>Valor Bruto (Caixa)</label>
+                <input type="number" id="custo-caixa" placeholder="0.00">
             </div>
-            <div class="campo" style="flex:1">
-                <label>Unidades</label>
-                <input type="number" id="qtd-caixa">
+            <div class="campo-grupo">
+                <label>Qtd. Unidades</label>
+                <input type="number" id="qtd-un" placeholder="Ex: 24">
             </div>
         </div>
 
-        <label>Margem de Lucro</label>
+        <label>Margem de Lucro Sugerida</label>
         <div class="botoes-margem">
-            <button class="btn-m" onclick="setMargem(10, this)">10%</button>
-            <button class="btn-m" onclick="setMargem(20, this)">20%</button>
-            <button class="btn-m" onclick="setMargem(30, this)">30%</button>
-            <button class="btn-m" onclick="setMargem(40, this)">40%</button>
-            <button class="btn-m" onclick="setMargem(50, this)">50%</button>
+            <button class="btn-m" onclick="definirMargem(10, this)">10%</button>
+            <button class="btn-m" onclick="definirMargem(20, this)">20%</button>
+            <button class="btn-m" onclick="definirMargem(30, this)">30%</button>
+            <button class="btn-m" onclick="definirMargem(40, this)">40%</button>
+            <button class="btn-m" onclick="definirMargem(50, this)">50%</button>
         </div>
 
         <div class="acoes">
-            <button class="btn-reset" onclick="limparTudo()">Zerar</button>
-            <button class="btn-acao" onclick="gerarEtiqueta()">Gerar Etiqueta</button>
+            <button class="btn-reset" onclick="resetar()">Zerar</button>
+            <button class="btn-gerar" onclick="validarEGerar()">Gerar Etiqueta</button>
         </div>
 
-        <div id="area-impressao">
+        <div id="resultado-container"></div>
+    </div>
+
+    <div id="modal-cadastro">
+        <div class="modal-box">
+            <h3>Novo Produto Detectado</h3>
+            <p>Insira a descrição para o código: <br><b id="txt-cod-novo"></b></p>
+            <input type="text" id="input-nova-desc" placeholder="Ex: Óleo de Soja 900ml" style="margin-bottom:15px;">
+            <div class="row">
+                <button class="btn-gerar" style="background:var(--cor-sucesso)" onclick="cadastrarEGerar()">Salvar</button>
+                <button class="btn-reset" onclick="fecharModal()">Sair</button>
             </div>
+        </div>
     </div>
 
     <script>
-        const bancoProdutos = {
+        // Banco de Dados Fixo (Arquivo JavaScript)
+        const bancoFixo = {
             "7891234567890": "Óleo de Soja 900ml",
-            "7890001112223": "Arroz Agulhinha 5kg",
             "1010": "Detergente Neutro",
             "2020": "Feijão Carioca 1kg"
         };
 
-        let margemGlobal = 0;
-        let nomeProdutoAtivo = "";
+        let margemAtiva = 0;
+        let produtoAtual = "";
 
-        function buscarProduto() {
-            const cod = document.getElementById('input-codigo').value;
-            const display = document.getElementById('msg-produto');
-            
-            if (bancoProdutos[cod]) {
-                nomeProdutoAtivo = bancoProdutos[cod];
-                display.innerText = "✓ " + nomeProdutoAtivo;
+        // Busca Inteligente (LocalStorage + Banco Fixo)
+        function buscar() {
+            const cod = document.getElementById('cod-produto').value;
+            const info = document.getElementById('info-busca');
+            const bancoLocal = JSON.parse(localStorage.getItem('etiquetas_marcio')) || {};
+
+            if (!cod) { info.innerText = ""; return; }
+
+            if (bancoLocal[cod]) {
+                produtoAtual = bancoLocal[cod];
+                info.innerText = "✓ (LocalStorage) " + produtoAtual;
+                info.style.color = "var(--cor-sucesso)";
+            } else if (bancoFixo[cod]) {
+                produtoAtual = bancoFixo[cod];
+                info.innerText = "✓ (Banco JS) " + produtoAtual;
+                info.style.color = "#007bff";
             } else {
-                nomeProdutoAtivo = cod; 
-                display.innerText = cod ? "Código manual detectado." : "";
+                produtoAtual = "";
+                info.innerText = "⚠ Código novo. Clique em Gerar para cadastrar.";
+                info.style.color = "#888";
             }
         }
 
-        function setMargem(valor, elemento) {
-            margemGlobal = valor;
+        function definirMargem(v, el) {
+            margemAtiva = v;
             document.querySelectorAll('.btn-m').forEach(b => b.classList.remove('ativo'));
-            elemento.classList.add('ativo');
+            el.classList.add('ativo');
         }
 
-        function limparTudo() {
-            document.getElementById('input-codigo').value = "";
-            document.getElementById('vlr-caixa').value = "";
-            document.getElementById('qtd-caixa').value = "";
-            document.getElementById('msg-produto').innerText = "";
-            document.getElementById('area-impressao').innerHTML = "";
-            document.querySelectorAll('.btn-m').forEach(b => b.classList.remove('ativo'));
-            margemGlobal = 0;
-            nomeProdutoAtivo = "";
-            document.getElementById('input-codigo').focus();
-        }
+        function validarEGerar() {
+            const cod = document.getElementById('cod-produto').value;
+            const vlr = document.getElementById('custo-caixa').value;
+            const un = document.getElementById('qtd-un').value;
 
-        function gerarEtiqueta() {
-            const custo = parseFloat(document.getElementById('vlr-caixa').value);
-            const qtd = parseInt(document.getElementById('qtd-caixa').value);
-            const cod = document.getElementById('input-codigo').value;
-
-            if (!nomeProdutoAtivo || !custo || !qtd || margemGlobal === 0) {
-                alert("Preencha todos os campos e selecione a margem de lucro!"); 
+            if (!cod || !vlr || !un || margemAtiva === 0) {
+                alert("Por favor, preencha todos os dados e a margem de lucro.");
                 return;
             }
 
-            const precoVenda = (custo / qtd) * (1 + margemGlobal/100);
-            const container = document.getElementById('area-impressao');
+            if (!produtoAtual) {
+                document.getElementById('txt-cod-novo').innerText = cod;
+                document.getElementById('modal-cadastro').style.display = "flex";
+            } else {
+                renderizarEtiqueta();
+            }
+        }
 
-            container.innerHTML = `
-                <div class="etiqueta-final">
-                    <div class="nome-prod">${nomeProdutoAtivo}</div>
-                    <div style="font-size: 12px; margin-top: 10px; font-weight:bold;">PREÇO UNITÁRIO</div>
-                    <div class="preco-grande">R$ ${precoVenda.toFixed(2).replace('.', ',')}</div>
-                    <div class="cod-visual">${cod}</div>
-                    <div style="font-size: 10px; font-weight:bold;">CÓDIGO: ${cod}</div>
+        function cadastrarEGerar() {
+            const cod = document.getElementById('cod-produto').value;
+            const desc = document.getElementById('input-nova-desc').value;
+            
+            if (desc) {
+                let bancoLocal = JSON.parse(localStorage.getItem('etiquetas_marcio')) || {};
+                bancoLocal[cod] = desc;
+                localStorage.setItem('etiquetas_marcio', JSON.stringify(bancoLocal));
+                produtoAtual = desc;
+                fecharModal();
+                renderizarEtiqueta();
+            }
+        }
+
+        function fecharModal() { document.getElementById('modal-cadastro').style.display = "none"; }
+
+        function renderizarEtiqueta() {
+            const cod = document.getElementById('cod-produto').value;
+            const vlr = parseFloat(document.getElementById('custo-caixa').value);
+            const un = parseInt(document.getElementById('qtd-un').value);
+            
+            const precoVenda = (vlr / un) * (1 + margemAtiva / 100);
+            const area = document.getElementById('resultado-container');
+
+            area.innerHTML = `
+                <div class="etiqueta-print">
+                    <div class="desc">${produtoAtual}</div>
+                    <div style="font-size: 12px; margin-top: 10px; font-weight: bold;">PREÇO UNITÁRIO</div>
+                    <div class="vlr">R$ ${precoVenda.toFixed(2).replace('.', ',')}</div>
+                    <div class="barcode-img">${cod}</div>
+                    <div style="font-size: 10px; font-weight: bold;">CÓD: ${cod}</div>
                 </div>
-                <button class="btn-imprimir" onclick="window.print()">Imprimir Etiqueta</button>
+                <button class="btn-print" onclick="window.print()">Imprimir Etiqueta</button>
             `;
+        }
+
+        function resetar() {
+            document.getElementById('cod-produto').value = "";
+            document.getElementById('custo-caixa').value = "";
+            document.getElementById('qtd-un').value = "";
+            document.getElementById('info-busca').innerText = "";
+            document.getElementById('resultado-container').innerHTML = "";
+            document.querySelectorAll('.btn-m').forEach(b => b.classList.remove('ativo'));
+            margemAtiva = 0;
+            produtoAtual = "";
+            document.getElementById('cod-produto').focus();
         }
     </script>
 </body>
